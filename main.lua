@@ -6,17 +6,44 @@ local Events, Functions, MOB, Mons, NPC, Item = RS.Chest.Remotes.Events, RS.Ches
 local Mon, Boss = Mons.Mon, Mons.Boss
 
 local DailyQuest, Quest
+
+local tempQuestPos = {
+	[CFrame.new(-2075.58643, 49.1827126, -4562.23926)] = {1, 10, 20, 30},
+	[CFrame.new(-684.845581, 51.2822418, -3445.97095)] = {50, 75},
+	[CFrame.new(-2421.89233, 49.2271576, -2645.13232)] = {100, 120, 145},
+	[CFrame.new(-739.998901, 23.0669994, -1373.39429)] = {180, 200},
+	[CFrame.new(-4149.85303, 17.1737289, -3061.93823)] = {250, 300},
+	[CFrame.new(-5435.86523, 28.9249992, -1297.03296)] = {400, 450},
+	[CFrame.new(-2920.24707, 102.323692, -624.706238)] = {525, 575, 625, 675, 725},
+	[CFrame.new(-4446.17432, 410.454559, 1243.42749)] = {800, 850, 900, 950},
+	[CFrame.new(1533.56995, 18.2409992, 944.655029)] = {1000, 1050, 1100, 1150},
+	[CFrame.new(-1257.83301, 20.8628159, 2311.37573)] = {1200, 1250, 1300, 1350, 1400, 1450},
+	[CFrame.new(-2751.56152, 39.1473541, 4112.47705)] = {1500, 1550, 1600, 1650},
+	[CFrame.new(2234.65991, 73.3557739, -1790.39978)] = {1700, 1750, 1800, 1850, 1925},
+	[CFrame.new(-1715.771, 40.3806, 6315.40283)] = {2000, 2050, 2100, 2150, 2200},
+}
+
+local QuestPos = {
+	[3050] = CFrame.new(-6380.73291, 75.3970032, 7030.30176)
+}
+
+for i, v in next, tempQuestPos do
+	for _, v1 in next, v do
+		QuestPos[v1] = i
+	end
+end
+
 if game.PlaceId == 4520749081 then
 	Quest = {
 	}
 	DailyQuest = {
-		{"Kill 20 Soldiers", 1},
+		{"Kill 20 Soldiers", 1, "Soldier [Lv. 1]"},
 		{"Forget and Forgot" , 5},
 		{"Venture Lagoons!", 10},
-		{"Tomb Raiding!", 50}, -- Shadow Master [Lv. 1650]
-		{"Dead Walking", 100}, -- Zombie [Lv. 1500]
-		{"Kill 4 King Snow", 500},
-		{"Kill 10 Soldier Fishman", 2000}
+		{"Tomb Raiding!", 50, "Shadow Master [Lv. 1650]"},
+		{"Dead Walking", 100, "Zombie [Lv. 1500]"},
+		{"Kill 4 King Snow", 500, "King Snow [Lv. 450]"},
+		{"Kill 10 Soldier Fishman", 2000, "Soldier Fishman [Lv. 2150]"}
 	}
 elseif game.PlaceId == 6381829480 then
 	DailyQuest = {
@@ -28,7 +55,7 @@ elseif game.PlaceId == 6381829480 then
 		{"Dead Above", 3000},
 		{"Catch me,If you can", 3000},
 		{"The Lost Book", 3800},
-		{"Is it Thriller?", 3050, CFrame.new(-6380.73291, 75.3970032, 7030.30176)}, -- Skull Pirate [Lv. 3050]
+		{"Is it Thriller?", 3050, "Skull Pirate [Lv. 3050]"},
 		{"Left to Dead", 3000}, -- Dead Troupe Captain [Lv. 3850]
 		{"One More Time", 3000}, -- Joey [Lv. 3000]
 		{"Believer", 3500}, -- Hefty [Lv. 3550]
@@ -85,6 +112,15 @@ function Attack()
 	Functions.SkillAction:InvokeServer("SW_" .. plr.PlayerStats.SwordName.Value .. "_M1")
 end
 
+function Equip(name)
+	name = name or plr.PlayerStats.SwordName.Value
+	if plr.Backpack:FindFirstChild(name) then
+		local tool = plr.Backpack[name]
+		task.wait(1)
+		plr.Character.Humanoid:EquipTool(tool)
+	end
+end
+
 function GetDistance(pos, obj)
 	obj = obj or plr.Character
 	local a, b
@@ -108,7 +144,7 @@ function Check(obj)
 end
 
 function CheckMons(name)
-	return MOB:FindFirstChild(name) or Boss:FindFirstChild(name) or Mon:FindFirstChild(name)
+	return Boss:FindFirstChild(name) or Mon:FindFirstChild(name)
 end
 
 function CheckObject(obj)
@@ -217,6 +253,7 @@ function Prompt(name, a, pos)
 end
 
 function Touch(name)
+	name = name or plr.PlayerStats.SwordName.Value
 	for _, v in next, Item:GetChildren() do
 		if v.Name == name then
 			Tween(v.CFrame)
@@ -225,24 +262,43 @@ function Touch(name)
 	end
 end
 
--- function Kill(mob)
--- 	for _, v in next, 
--- end
-
-function Acp(npc)
-	TP(NPC[npc].CFrame)
+function Acp(gui)
+	TP(NPC[gui].CFrame)
 	repeat
 		task.wait(1)
 		Click()
-	until plr.PlayerGui:FindFirstChild(npc) and plr.PlayerGui[npc]:FindFirstChild("Dialogue") and plr.PlayerGui[npc].Dialogue:FindFirstChild("Accept")
-	plr.PlayerGui[npc].Dialogue.Accept.ImageTransparency = 1
-	plr.PlayerGui[npc].Dialogue.Accept.Position = UDim2.new(-2, 0, -5, 0)
-	plr.PlayerGui[npc].Dialogue.Accept.Size = UDim2.new(0, 10000, 0, 10000)
+	until plr.PlayerGui:FindFirstChild(gui) and plr.PlayerGui[gui]:FindFirstChild("Dialogue") and plr.PlayerGui[gui].Dialogue:FindFirstChild("Accept")
+	plr.PlayerGui[gui].Dialogue.Accept.ImageTransparency = 1
+	plr.PlayerGui[gui].Dialogue.Accept.Position = UDim2.new(-2, 0, -5, 0)
+	plr.PlayerGui[gui].Dialogue.Accept.Size = UDim2.new(0, 10000, 0, 10000)
 	task.wait(.1)
 	Click()
 end
 
-function DoQuest()
+function Kill(name)
+	repeat
+		task.wait(1)
+		TP(QuestPos[tonumber(string.match(name, "%d+"))])
+	until CheckMons(name)
+	for _, v in next, Mons:GetDescendants() do
+		if v.Name == name then
+			pcall(function()
+				getgenv().LockPos = v.HumanoidRootPart.CFrame
+				repeat
+					task.wait()
+					TP1(v.HumanoidRootPart.CFrame)
+					getgenv().BringMob = true
+					Haki()
+					getgenv().Attack = true
+				until plr.CurrentQuest.Value == "" or not v or not v:FindFirstChild("HumanoidRootPart") or not v:FindFirstChild("Humanoid") or v.Humanoid.Health <= 0
+				getgenv().BringMob = false
+				getgenv().Attack = false
+			end)
+		end
+	end
+end
+
+function DoQuest(mob)
 	local a = plr.CurrentQuest.Value
 	if a == "" then
 		return
@@ -295,6 +351,8 @@ function DoQuest()
 		fireproximityprompt(v.ProximityPrompt)
 	elseif a == "I'm not,YOU ARE!" or a == "Under The Sea~"  then
 		Touch(a)
+	elseif mob then
+		Kill(mob)
 	end
 end
 
@@ -306,8 +364,8 @@ task.spawn(function()
 					GetQuest(v[1])
 					repeat
 						task.wait()
-						DoQuest()
-					until not getgenv().Config["Daily Quest"] or plr.CurrentQuest.Value == ""
+						DoQuest(v[3])
+					until not getgenv().Config["Daily Quest"] or plr.CurrentQuest.Value ~= v[1]
 					task.wait(1)
 				end
 			end
@@ -530,16 +588,6 @@ end)
 task.spawn(function()
 	while task.wait() do
 		if getgenv().Config["Daily Quest"] then
-			getgenv().NoClip = true
-		else
-			getgenv().NoClip = false
-		end
-	end
-end)
-
-task.spawn(function()
-	while task.wait() do
-		if getgenv().NoClip then
 			if not plr.Character.HumanoidRootPart:FindFirstChild("tcode") then
 				local a = Instance.new("BodyVelocity")
 				a.Name = "tcode"
@@ -561,7 +609,10 @@ end)
 task.spawn(function()
 	while task.wait() do
 		if getgenv().Attack then
+			Equip()
 			Attack()
+			SendKey("Z")
+			SendKey("X")
 		end
 	end
 end)
