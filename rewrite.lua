@@ -24,13 +24,16 @@ function SendKey(key, d)
     game:GetService("VirtualInputManager"):SendKeyEvent(false, key, false, game)
 end
 
-repeat task.wait() until (LP:FindFirstChild("DataLoaded") and LP:FindFirstChild("DataLoaded").Value) or (LP.PlayerGui:FindFirstChild("LoadingGUI") and LP.PlayerGui.LoadingGUI:FindFirstChild("Play"))
-if LP.PlayerGui:FindFirstChild("LoadingGUI") and LP.PlayerGui.LoadingGUI:FindFirstChild("Play") then
-    game:GetService("GuiService").SelectedObject = LP.PlayerGui.LoadingGUI.Play
-    SendKey(Enum.KeyCode.Return)
-end
-
-repeat task.wait() until LP:FindFirstChild("DataLoaded") and LP:FindFirstChild("DataLoaded").Value
+repeat task.wait() 
+    if LP.PlayerGui:FindFirstChild("LoadingGUI") and LP.PlayerGui.LoadingGUI:FindFirstChild("Play") then
+        LP.PlayerGui.LoadingGUI.Play.Visible = true
+        game:GetService("GuiService").SelectedObject = LP.PlayerGui.LoadingGUI.Play
+        task.wait(.1)
+        SendKey(Enum.KeyCode.Return)
+        task.wait(1)
+        game:GetService("GuiService").SelectedObject = nil
+    end
+until LP:FindFirstChild("DataLoaded") and LP:FindFirstChild("DataLoaded").Value
 
 getgenv().Config = {}
 
@@ -156,10 +159,11 @@ local Boss = {
     ["Dragon"] = "Dragon [Lv. 5000]",
     ["BM"] = "Ms. Mother [Lv. 7500]",
     ["Saber2"] = "Lord of Saber [Lv. 8500]",
-    ["Jack"] = "Jack o lantern [Lv. 10000]"
+    ["Jack"] = "Jack o lantern [Lv. 10000]",
+    ["Ethereal"] = "Bushido Ape [Lv. 5000]"
 }
 local Quests, DQuests, PosMob, Material, Sword, Accessory =  {}, {}, {}, {}, {}, {}
-local Mode, Mob, ParentMob, LockPos, Magnet, Attack, AttackPos, SeaEvent = CFrame.new(0, 8, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+local Mode, Mob, ParentMob, LockPos, DialogueEnabled, Attack, AttackPos, SeaEvent = CFrame.new(0, 8, 0) * CFrame.Angles(math.rad(-90), 0, 0)
 if ID == 1 then
     PosMob = {
         [1] = CFrame.new(-1915, 49, -4569),
@@ -278,12 +282,12 @@ if ID == 1 then
 		{"Kill 1 Seasoned Fishman", 2200}
 	}
     Material = {
-		["Fresh Fish"] = {"Kill 4 Fighter Fishmans", 180},
-        ["Thief's rag"] = {"Kill 4 Desert Marauder", 675},
-		["Angellic's Feather"] = {"Kill 4 Sky Soldier", 800},
-        ["Gunpowder"] = {"Kill 4 Naval personnel", 1200},
-        ["Undead's Ooze"] = {"Kill 5 Zombies", 1500},   
-		["Twilight's Orb"] = {"Kill 1 Shadow Master", 1650},
+		["Fresh Fish"] = {"Kill 4 Fighter Fishmans", 180, "Fighter Fishman [Lv. 180]"},
+        ["Thief's rag"] = {"Kill 4 Desert Marauder", 675, "Desert Marauder [Lv. 675]"},
+		["Angellic's Feather"] = {"Kill 4 Sky Soldier", 800, "Sky Soldier [Lv. 800]"},
+        ["Gunpowder"] = {"Kill 4 Naval personnel", 1200, "Naval personnel [Lv. 1200]"},
+        ["Undead's Ooze"] = {"Kill 5 Zombies", 1500, "Zombie [Lv. 1500]"},   
+		["Twilight's Orb"] = {"Kill 1 Shadow Master", 1650, "Shadow Master [Lv 1650]"},
     }
     Sword = {
         ["Bisento"] = {"Kill 1 Quake Woman", 1925},
@@ -403,16 +407,16 @@ elseif ID == 2 then
 		{"Kill 1 Ryu", 3950}
 	}
     Material = {
-		["Carrot"] = {"Kill 4 Beast Pirates", 2250},
-		["Samurai's Bandage"] = {"Kill 1 Kitsune Samurai", 2650},
-		["Bone"] = {"Kill 4 Skull Pirates", 3025},
-		["Ice Crystal"] = {"Kill 4 Azlan", 3300},
-		["Magma Crystal"] = {"Kill 4 The Volcano", 3325},
-		["Dark Beard's Totem"] = {"Kill 4 Dark Beard Servant", 3400},
-		["Lucidus's Totem"] = {"Kill 5 Vice Admiral", 3500},
-		["Lost Ruby"] = {"Kill 1 Anubis", 3125},
-		["Essence of Fire"] = {"Kill 1 Flame User", 3175},
-		["Dragon's Orb"] = {"Kill 1 Elite Skeleton", 3075},
+		["Carrot"] = {"Kill 4 Beast Pirates", 2250, "Beast Pirate [Lv 2250]"},
+		["Samurai's Bandage"] = {"Kill 1 Kitsune Samurai", 2650, "Kitsune Samurai [Lv 2650]"},
+		["Bone"] = {"Kill 4 Skull Pirates", 3025, "Skull Pirate [Lv. 3050]"},
+		["Ice Crystal"] = {"Kill 4 Azlan", 3300, "Azlan [Lv. 3300]"},
+		["Magma Crystal"] = {"Kill 4 The Volcano", 3325, "The Volcano [Lv. 3325]"},
+		["Dark Beard's Totem"] = {"Kill 4 Dark Beard Servant", 3400, "Dark Beard Servant [Lv. 3400]"},
+		["Lucidus's Totem"] = {"Kill 5 Vice Admiral", 3500, "Vice Admiral [Lv. 3500]"},
+		["Lost Ruby"] = {"Kill 1 Anubis", 3125, "Anubis [Lv. 3150]"},
+		["Essence of Fire"] = {"Kill 1 Flame User", 3175, "Flame User [Lv 3200]"},
+		["Dragon's Orb"] = {"Kill 1 Elite Skeleton", 3075, "Elite Skeleton [Lv. 3100]"},
 	}
     Sword = {
         ["Sunken Blade"] = {"Kill 1 Sunken Vessel", 3225},
@@ -423,7 +427,7 @@ elseif ID == 2 then
     Accessory = {
         ["Blue Scarf"] = {"Kill 1 Dough Master", 3275},
         ["Pondere Coat"] = {"Kill 1 Pondere", 3525},
-        ["Hefty Glasses | Hefty Coat"] = {"Kill 1 Hefty", 3550},
+        ["Hefty Coat"] = {"Kill 1 Hefty", 3550},
         ["Lucidus Coat"] = {"Kill 1 Lucidus", 3575},
         ["Floffy Glasses"] = {"Kill 1 Floffy", 3775},
     }
@@ -563,21 +567,25 @@ function CheckQuest(npc)
 end
 
 function Dialogue(npc, button)
-    TP(workspace.AllNPC[npc].CFrame * CFrame.new(0, 0, -3))
-    repeat
-        task.wait()
-    until workspace.AllNPC[npc]:FindFirstChild(npc)
+    DialogueEnabled = true
+    TP(workspace.AllNPC[npc].CFrame * CFrame.new(0, 0, -5))
     task.wait(1)
     CheckQuest(npc)
+    repeat task.wait() until LP.PlayerGui:FindFirstChild(npc) and LP.PlayerGui[npc]:FindFirstChild("Dialogue") and LP.PlayerGui[npc].Dialogue:FindFirstChild(button) and LP.PlayerGui[npc].Dialogue[button].Visible
+    task.wait(1)
     game:GetService("GuiService").SelectedObject = LP.PlayerGui[npc].Dialogue[button]
-    task.wait(.5)
+    task.wait(.1)
     SendKey(Enum.KeyCode.Return)
+    task.wait()
+    game:GetService("GuiService").SelectedObject = nil
+    DialogueEnabled = false
 end
 
-function CheckDailyQuest()
-    if not DQuests or #DQuests == 0 then
-        return false
-    end
+function Buy(npc)
+    Dialogue(npc, "Accept")
+end
+
+function GetDQuests()
     local a = game:GetService("HttpService"):JSONDecode(LP.PlayerStats.DailyQuest.Value)
     local temp = {}
     for _, v in next, DQuests do
@@ -585,12 +593,14 @@ function CheckDailyQuest()
             table.insert(temp, v)
         end
     end
-    DQuests = temp
-    return #DQuests > 0
+    if #temp == 0 then
+        return nil
+    end
+    return temp
 end
 
 CTabs({
-    {"Farm", ""},
+    {"Home", ""},
     {"Settings", ""},
     {"Sea", ""},
     {"Boss", ""},
@@ -599,23 +609,19 @@ CTabs({
     {"Teleport", ""}
 })
 
-Section("Farm", "Auto Farm")
+Section("Home", "Auto")
 
-Tog("Farm", "Auto Level", function(v)
+Tog("Home", "Auto Level", function(v)
     G["Auto Level"] = v
     if v == true and G["Auto Material"] then
         Obj["Auto Material"]:SetValue(false)
         Notify("Turn Off Auto Material", "Only Farm or Material", 5)
     end 
 end)
-if ID == 1 then
-    Tog("Farm", "Unlock Sea 2")
-elseif ID == 2 then
-    Tog("Farm", "Unlock Sea 3")
-end
-Tog("Farm", "Auto Daily Quest")
-Section("Farm", "Material")
-Tog("Farm", "Auto Material", function(v)
+Tog("Home", "Next Sea")
+Tog("Home", "Daily Quest")
+Section("Home", "Material")
+Tog("Home", "Auto Material", function(v)
     G["Auto Material"] = v
     if v == true then
         if G["Auto Level"] then
@@ -632,30 +638,20 @@ local MaterialName = {}
 for i, v in next, Material do
     table.insert(MaterialName, i)
 end
-DD1("Farm", "Select Material", "Select it before Auto", MaterialName)
+DD1("Home", "Select Material", "Select it before Auto", MaterialName)
 
-Section("Farm", "Test")
+Section("Home", "Test")
 
-Tog("Farm", "Auto Quest")
+Tog("Home", "Auto Quest")
 local QuestName = {}
 for i, v in next, Quests do
     table.insert(QuestName, i)
 end
-DD1("Farm", "Select Quest", "", QuestName)
+DD1("Home", "Select Quest", "", QuestName)
 
-Section("Settings", "Farm Settings")
-Tog("Settings", "Auto Haki")
+Section("Settings", "Farm")
+Tog("Settings", "Accept Quest")
 Tog("Settings", "Bring Mob")
-Box("Settings", "Distance", true, function(v)
-    G["Distance"] = v
-    if G["Mode"] == "Above" then
-        Mode = CFrame.new(0, G["Distance"], 0) * CFrame.Angles(math.rad(-90), 0, 0)
-    elseif G["Mode"] == "Below" then
-        Mode = CFrame.new(0, -G["Distance"], 0) * CFrame.Angles(math.rad(90), 0, 0)
-    else
-        Mode = CFrame.new(0, 0, G["Distance"])
-    end
-end)
 DD1("Settings", "Mode", "", {"Above", "Behind", "Below"}, function(v)
     G["Mode"] = v
     if v == "Above" then
@@ -666,15 +662,25 @@ DD1("Settings", "Mode", "", {"Above", "Behind", "Below"}, function(v)
         Mode = CFrame.new(0, 0, G["Distance"])
     end
 end)
+Box("Settings", "Distance", true, function(v)
+    G["Distance"] = v
+    if G["Mode"] == "Above" then
+        Mode = CFrame.new(0, G["Distance"], 0) * CFrame.Angles(math.rad(-90), 0, 0)
+    elseif G["Mode"] == "Below" then
+        Mode = CFrame.new(0, -G["Distance"], 0) * CFrame.Angles(math.rad(90), 0, 0)
+    else
+        Mode = CFrame.new(0, 0, G["Distance"])
+    end
+end)
 
-Section("Settings", "Player")
+Section("Settings", "MISC")
+Tog("Settings", "Auto Haki")
+Tog("Settings", "Auto Ken")
+Tog("Settings", "Hide Notification", function(v) LP.PlayerGui.Popup.Frame.Visible = v end)
+
+Section("Settings", "Stats")
 Tog("Settings", "Auto Stat")
 DD2("Settings", "Select Stat", "Melee -> Sword -> Defense -> DF", {"Melee", "sword", "Defense", "DF"})
--- game:GetService("Players").LocalPlayer.PlayerStats.Melee
--- game:GetService("Players").LocalPlayer.PlayerStats.sword
--- game:GetService("Players").LocalPlayer.PlayerStats.Defense
--- game:GetService("Players").LocalPlayer.PlayerStats.DF
--- game:GetService("Players").LocalPlayer.PlayerStats.Points
 if ID == 2 or ID == 3 then
     Section("Sea", "Auto")
     Tog("Sea", "Auto Sea Event")
@@ -687,7 +693,6 @@ else
 end
 
 Section("Boss", "Raid Boss")
-
 if ID == 1 then
     Tog("Boss", "Auto Saber")
 elseif ID == 2 then
@@ -716,7 +721,7 @@ end)
 
 Section("Teleport", "TP Sea")
 
-if ID == 2 or ID == 3 then
+if ID ~= 1 then
     Button("Teleport", "Sea 1", function()
         if ID == 2 then
             Dialogue("Elite Pirate", "Accept")
@@ -726,7 +731,7 @@ if ID == 2 or ID == 3 then
     end)
 end
 
-if ID == 1 or ID == 3 then
+if ID ~= 2 then
     Button("Teleport", "Sea 2", function()
         if ID == 1 then
             Dialogue("Elite Pirate", "Accept")
@@ -735,7 +740,7 @@ if ID == 1 or ID == 3 then
         end
     end)
 end
-if ID == 1 or ID == 2 then
+if ID ~= 3 then
     Button("Teleport", "Sea 3", function()
         if ID == 1 then
             Dialogue("Elite Pirate", "ThirdSea")
@@ -744,22 +749,30 @@ if ID == 1 or ID == 2 then
         end
     end)
 end
-
-Section("Shop", "Skill")
-Button("Shop", "Buso") -- workspace.AllNPC.BusoShop
-Button("Shop", "Soru") -- workspace.AllNPC.SoruShop
-Button("Shop", "Ken") -- workspace.AllNPC.KenShop
+if ID == 1 then
+    Section("Shop", "Skill")
+    Button("Shop", "Buso", function() Buy("BusoShop") end)
+    Button("Shop", "Soru", function() Buy("SoruShop") end)
+    Button("Shop", "Ken", function() Buy("KenShop") end)
+end
 Section("Shop", "Melee")
-Button("Shop", "Dark Leg", function() end) -- workspace.AllNPC.DarkLegShop
-Button("Shop", "Water Style", function() end) -- workspace.AllNPC.WaterStyleShop
-Button("Shop", "Cyborg", function() end)
-Button("Shop", "Electro", function() end)
-Button("Shop", "Dragon Claw", function() end) -- workspace.AllNPC.DragonClawShop
-Section("Shop", "Sword")
+Button("Shop", "Dark Leg", function() Buy("DarkLegShop") end)
+Button("Shop", "Water Style", function() Buy("WaterStyleShop") end)
+Button("Shop", "Cyborg", function() Buy("CyborgShop") end)
+if ID ~= 1 then
+    Button("Shop", "Electro", function() Buy("ElectroShop") end)
+    Button("Shop", "Dragon Claw", function() Buy("DragonClawShop") end)
+end
+Section("Shop", "Sword & Accessrory")
+if ID == 2 then
+    Button("Shop", "Bubble", function() Buy("BubbleSeller") end)
+end
 Section("Shop", "MISC")
-Button("Shop", "Redeem Code", function() end)
-Button("Shop", "Reset Stats", function() end) -- workspace.AllNPC.ResetStatsShop
-Button("Shop", "Reroll Race", function() end)
+local Codes = {
+    "X100KSuccess", "PvPArenaFun", "LegendarySwordsUnlocked", "Update7.1", "WELCOMETOKINGLEGACY", "FruitAwakeningTime", "SKFreeGems", "TelekinesisFruitPower", "InfernoKingAwaits", "Peodiz", "IslandQuestRepeat", "SKGames", "DinoxLive", "RainbowDragon", "Update7Release", "OwnerMeteor", "QuakeTsunamiBoost", "EpicAdventure", "DragonColorRefund", "SeaAdventure", "2MFAV", "Dinosaur100kFollowers", "FREESTATSRESET", "<3LEEPUNGG", "FREE30MINUTESEXP", "PassiveMaster", "ThirdSeaAdventures", "MaterialHunter", "MysticAccessoryFind", "GetYourLuck", "BossSlayer", "KrakensRevenge", "DragonColorsUnlocked", "PlayKingLegacyFor5Gems", "KioruV2PowerUp"}
+Button("Shop", "Redeem Code", function() for _, v in next, Codes do game:GetService("ReplicatedStorage").Chest.Remotes.Functions.redeemcode:InvokeServer(v) task.wait(5) end end)
+Button("Shop", "Reset Stats", function() Buy("ResetStatsShop") end)
+Button("Shop", "Reroll Race", function() Buy("RaceRerollsGem") end)
 
 Section("Teleport", "Server")
 
@@ -777,24 +790,18 @@ end)
 
 if not _G.Config then
     _G.Config = {
+        ["Accept Quest"] = true,
         ["Auto Haki"] = true,
+        ["Auto Ken"] = true,
         ["Bring Mob"] = true,
         ["Distance"] = 8,
         ["Mode"] = "Above",
-        ["Select Stat"] = {"Melee"},
+        ["Hide Notification"] = true,
     }
 end
 
 for i, v in next, _G.Config do
-    if type(v) == "table" then
-        local args = {}
-        for _, v1 in next, v do
-            args[v1] = v1
-        end
-        Obj[i]:SetValue(args)
-    else 
-        Obj[i]:SetValue(v)
-    end
+    Obj[i]:SetValue(v)
 end
 
 Window:SelectTab(1)
@@ -846,11 +853,14 @@ function CheckMons(name)
     return nil
 end
 
-function Hit(weapon, tool)
-    -- pos = pos or LP.Character.HumanoidRootPart.CFrame, {["MouseHit"] = pos * CFrame.Angles(-0, 0, -0)}
+function Hit(pos, weapon, tool)
     weapon = weapon or "SW"
     tool = tool or LP.PlayerStats.SwordName.Value
-    game:GetService("ReplicatedStorage").Chest.Remotes.Functions.SkillAction:InvokeServer(weapon .. "_" .. tool .. "_M1")
+    if pos then
+        game:GetService("ReplicatedStorage").Chest.Remotes.Functions.SkillAction:InvokeServer(weapon .. "_" .. tool .. "_M1", {["MouseHit"] = pos * CFrame.Angles(-0, 0, -0)})
+    else
+        game:GetService("ReplicatedStorage").Chest.Remotes.Functions.SkillAction:InvokeServer(weapon .. "_" .. tool .. "_M1")
+    end
 end
 
 function Prompt(item, a, pos)
@@ -880,7 +890,7 @@ end
 
 function BringMob()
     local lv = tonumber(string.match(Mob, "%d+"))
-    for _, v in next, workspace.Monster.Mon:GetChildren() do
+    for _, v in next, ParentMob:GetChildren() do
         if v.Name == Mob and v:FindFirstChild("HumanoidRootPart") then
             -- if ParentMob.Name == "Mon" then
             --     if Distance(LockPos, v) <= 300 and Distance(LockPos, v) > 5 then
@@ -896,11 +906,11 @@ function BringMob()
             -- if v.Humanoid:FindFirstChild("Animator") then
             --     v.Humanoid.Animator:Destroy()
             -- end
-            if Distance(LockPos, v) <= 300 and Distance(LockPos, v) > 3 then
-                v.HumanoidRootPart.CFrame = LockPos
+            if Distance(LockPos, v) <= 300 then
+                v.HumanoidRootPart.CFrame = LockPos * CFrame.new(math.random(-1, 1), 0, math.random(-1, 1))
             end
             v.HumanoidRootPart.CanCollide = false
-            sethiddenproperty(LP,"SimulationRadius",math.huge)
+            -- sethiddenproperty(LP,"SimulationRadius",math.huge)
         end
     end
 end
@@ -915,10 +925,9 @@ end
 function Kill(toggle, mob)
     Mob = mob or LP.PlayerGui.MainGui.QuestFrame.QuestBoard.TextFrame.QuestName.Text
     ParentMob = CheckMons(Mob)
-    local lvl = tonumber(string.match(Mob, "%d+"))
-    GetLockPos(lvl)
+    local lv = tonumber(string.match(Mob, "%d+"))
+    GetLockPos(lv)
     if ParentMob then
-        Equip()
         -- for _, v in next, ParentMob:GetChildren() do
         --     if v.Name == Mob and v:FindFirstChild("HumanoidRootPart") then
         --         TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 0, G["Distance"]))
@@ -930,13 +939,11 @@ function Kill(toggle, mob)
             if v.Name == Mob and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
                 repeat
                     task.wait()
-                    if lvl == 3050 then
-                        if Distance(LockPos, v) > 300 then
-                            if LockPos == PosMob[3050] then
-                                LockPos = PosMob[3051]
-                            else
-                                LockPos = PosMob[3050]
-                            end
+                    if Distance(LockPos, v) > 1000 then
+                        if LockPos == PosMob[lv] then
+                            LockPos = PosMob[lv + 1]
+                        else
+                            LockPos = PosMob[lv]
                         end
                     end
                     Equip()
@@ -944,11 +951,11 @@ function Kill(toggle, mob)
                         TP(v.HumanoidRootPart.CFrame * Mode)
                         AttackPos = v.HumanoidRootPart.CFrame
                     end)
-                    -- Magnet = true
-                    BringMob()
+                    if G["Bring Mob"] then
+                        BringMob()
+                    end
                     Attack = true
-                until not G[toggle] or LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false or not v.Parent or v.Humanoid.Health <= 0
-                -- Magnet = false
+                until DialogueEnabled or not G[toggle] or not v.Parent or v.Humanoid.Health <= 0
                 Attack = false
             end
         end
@@ -989,7 +996,7 @@ function KillBoss(boss, toggle)
                     AttackPos = v.HumanoidRootPart.CFrame
                 end)
                 Attack = true
-            until not G[toggle] or not v.Parent or v.Humanoid.Health <= 0
+            until DialogueEnabled or not G[toggle] or not v.Parent or v.Humanoid.Health <= 0
             Attack = false
         end
     elseif CheckBoss(boss) then
@@ -1002,7 +1009,7 @@ task.spawn(function()
     while task.wait() do
         if G["Auto Quest"] then
             local q, lv = unpack(Quests[G["Select Quest"]])
-            if LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false or LP.CurrentQuest.Value ~= q then
+            if not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible or LP.CurrentQuest.Value ~= q then
                 GetQuest(q)
                 task.wait(.1)
             else
@@ -1014,56 +1021,59 @@ end)
 
 task.spawn(function()
     while task.wait() do
-        if G["Auto Sea Event"] and SeaEvent then
-        elseif G["Auto GS"] and (workspace.GhostMonster:FindFirstChild("Ghost Ship") or workspace:FindFirstChild("Chest1")) then
-            local v = workspace.GhostMonster:FindFirstChild("Ghost Ship")
-            if v and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                repeat
-                    task.wait()
-                    Equip()
-                    pcall(function()
-                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 50, 0))
-                        AttackPos = v.HumanoidRootPart.CFrame
-                    end)
-                    Attack = true
-                until not G["Auto GS"] or not v.Parent or v.Humanoid.Health <= 0
-                Attack = false
-            end
-            repeat
-                task.wait()
-            until not G["Auto GS"] or workspace:FindFirstChild("Chest1")
-            local old = LP.PlayerStats.Accessory.Value
-            game:GetService("ReplicatedStorage").Chest.Remotes.Functions.AccessoryEq:InvokeServer("Bullitus")
-            for _, v in next, workspace:GetChildren() do
-                if string.find(v.Name, "Chest") and v:FindFirstChild("RootPart") then
-                    TP(v.RootPart.CFrame)
-                    task.wait(2)
+        if not DialogueEnabled then
+            if G["Auto Sea Event"] and SeaEvent then
+            elseif G["Auto GS"] and (workspace.GhostMonster:FindFirstChild("Ghost Ship") or workspace:FindFirstChild("Chest1")) then
+                local v = workspace.GhostMonster:FindFirstChild("Ghost Ship")
+                if v and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                    repeat
+                        task.wait()
+                        Equip()
+                        pcall(function()
+                            TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 50, 0))
+                            AttackPos = v.HumanoidRootPart.CFrame
+                        end)
+                        Attack = true
+                    until DialogueEnabled or not G["Auto GS"] or not v.Parent or v.Humanoid.Health <= 0
+                    Attack = false
                 end
-            end
-            TP(LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, 100, 0))
-            task.wait(1)
-            game:GetService("ReplicatedStorage").Chest.Remotes.Functions.AccessoryEq:InvokeServer(old)
-            Obj["Auto GS"]:SetValue(false)
-        elseif G["Auto Skull King"] and workspace.SeaMonster:FindFirstChild("Skull King") then
-        elseif G["Auto Lord of Saber"] and CheckBoss(Boss["Saber2"]) then
-            KillBoss(Boss["Saber2"], "Auto Lord of Saber")
-        elseif G["Auto Ethereal"] and CheckBoss(Boss["Ethereal"]) then
-            KillBoss(Boss["Ethereal"], "Auto Ethereal")
-        elseif G["Auto Jack o lantern"] and CheckBoss(Boss["Jack"]) then
-            KillBoss(Boss["Jack"], "Auto Jack o lantern")
-        elseif G["Auto BM"] and CheckBoss(Boss["BM"]) then
-            KillBoss(Boss["BM"], "Auto BM")
-        elseif G["Auto Muramasa"] and CheckBoss(Boss["Muramasa"]) then
-            KillBoss(Boss["Muramasa"], "Auto Muramasa")
-        elseif G["Auto Dragon"] and CheckBoss(Boss["Dragon"]) then
-            KillBoss(Boss["Dragon"], "Auto Dragon")
-        elseif G["Auto Saber"] and CheckBoss(Boss["Saber"]) then
-            KillBoss(Boss["Saber"], "Auto Saber")
-        elseif G["Auto Daily Quest"]  then
-            if CheckDailyQuest() then
-                local q, lv, t = unpack(DQuests[1])
+                task.wait(1)
+                local old = LP.PlayerStats.Accessory.Value
+                task.wait(1)
+                game:GetService("ReplicatedStorage").Chest.Remotes.Functions.AccessoryEq:InvokeServer("Bullitus")
+                repeat
+                    task.wait(1)
+                    local flag = false
+                    for _, v in next, workspace:GetChildren() do
+                        if string.find(v.Name, "Chest") and v:FindFirstChild("RootPart") then
+                            flag = true
+                            TP(v.RootPart.CFrame)
+                            task.wait(2)
+                        end
+                    end
+                until not flag
+                TP(LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, 100, 0))
+                task.wait(1)
+                game:GetService("ReplicatedStorage").Chest.Remotes.Functions.AccessoryEq:InvokeServer(old)
+            elseif G["Auto Skull King"] and workspace.SeaMonster:FindFirstChild("Skull King") then
+            elseif G["Auto Lord of Saber"] and CheckBoss(Boss["Saber2"]) then
+                KillBoss(Boss["Saber2"], "Auto Lord of Saber")
+            elseif G["Auto Ethereal"] and CheckBoss(Boss["Ethereal"]) then
+                KillBoss(Boss["Ethereal"], "Auto Ethereal")
+            elseif G["Auto Jack o lantern"] and CheckBoss(Boss["Jack"]) then
+                KillBoss(Boss["Jack"], "Auto Jack o lantern")
+            elseif G["Auto BM"] and CheckBoss(Boss["BM"]) then
+                KillBoss(Boss["BM"], "Auto BM")
+            elseif G["Auto Muramasa"] and CheckBoss(Boss["Muramasa"]) then
+                KillBoss(Boss["Muramasa"], "Auto Muramasa")
+            elseif G["Auto Dragon"] and CheckBoss(Boss["Dragon"]) then
+                KillBoss(Boss["Dragon"], "Auto Dragon")
+            elseif G["Auto Saber"] and CheckBoss(Boss["Saber"]) then
+                KillBoss(Boss["Saber"], "Auto Saber")
+            elseif G["Auto Daily Quest"] and GetDQuests()  then
+                local q, lv, mob = unpack(GetDQuests()[1])
                 local lvl = LP.PlayerStats.lvl.Value
-                if (lvl >= lv) and ((LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false) or (LP.CurrentQuest.Value ~= q)) then
+                if (lvl >= lv) and ((not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible) or (LP.CurrentQuest.Value ~= q)) then
                     GetQuest(q)
                     task.wait(.1)
                 else
@@ -1075,7 +1085,6 @@ task.spawn(function()
                         elseif a == "Box Box!" then
                             Prompt("Box")
                             Dialogue("Civilian Port", "Accept")
-                            task.wait(1)
                         elseif a == "Venture Lagoons!" then
                             if not workspace.Ships:FindFirstChild(LP.Name .. " Ship") then
                                 game:GetService("ReplicatedStorage").Chest.Remotes.Events.Ship:FireServer("Rowboat", "ShipA")
@@ -1095,7 +1104,9 @@ task.spawn(function()
                                 end
                             end
                             LP.Character.Humanoid.Sit = false
+                            task.wait(.1)
                             TP(LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, 100, 0))
+                            task.wait(1)
                         elseif a == "Bone Hunter" then
                             Prompt(a, CFrame.Angles(math.rad(135), 0, 0), CFrame.new(0, -5, 3))
                         elseif a == "Order Disobey" then
@@ -1125,47 +1136,52 @@ task.spawn(function()
                                 end
                             end
                             task.wait(1)
-                        elseif t then
-                            Kill("Auto Daily Quest", t)
+                        elseif mob then
+                            Kill("Auto Daily Quest", mob)
                         end
-                    until not G["Auto Daily Quest"] or LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false
+                    until DialogueEnabled or not G["Auto Daily Quest"] or not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible
                 end
-             else
-                Obj["Auto Daily Quest"]:SetValue(false)
-                Notify("Turn Off Daily Quests", "Not Found", 5)
-            end
-        elseif G["Auto Material"] and G["Select Material"] then
-            local lvl, q, lv = LP.PlayerStats.lvl.Value, unpack(Material[G["Select Material"]])
-            if (lvl >= lv) and ((LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false) or (LP.CurrentQuest.Value ~= q)) then
-                GetQuest(q)
-                task.wait(.1)
-            else
-                Kill("Auto Material")
-            end
-        elseif G["Auto Level"] then
-            local lvl = LP.PlayerStats.lvl.Value
-            if G["Unlock Sea 2"] and lvl >= 2250 and LP.PlayerStats.SecondSeaProgression.Value == "No" then
-                local q = "Second Sea Map"
-                if LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false or LP.CurrentQuest.Value ~= q then
+            elseif G["Auto Material"] and G["Select Material"] then
+                local lvl, q, lv, mob = LP.PlayerStats.lvl.Value, unpack(Material[G["Select Material"]])
+                if G["Accept Quest"] and lvl >= lv and ((not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible) or LP.CurrentQuest.Value ~= q) then
                     GetQuest(q)
                     task.wait(.1)
                 else
-                    if string.find(game:GetService("Players").LocalPlayer.PlayerStats.Material.Value, "Map") then
-                        Dialogue("Traveler", "Accept")
-                    else
-                        Kill("Unlock Sea 2", "Seasoned Fishman [Lv. 2200]")
+                    Kill("Auto Material", mob)
+                end
+            elseif G["Auto Level"] then
+                local lvl = LP.PlayerStats.lvl.Value
+                if G["Next Sea"] then
+                    if ID == 1 then
+                            if lvl >= 2250 and LP.PlayerStats.SecondSeaProgression.Value == "No" then
+                                local q = "Second Sea Map"
+                                if not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible or LP.CurrentQuest.Value ~= q then
+                                    GetQuest(q)
+                                    task.wait(.1)
+                                else
+                                    if string.find(game:GetService("Players").LocalPlayer.PlayerStats.Material.Value, "Map") then
+                                        Dialogue("Traveler", "Accept")
+                                    else
+                                        Kill("Next Sea", "Seasoned Fishman [Lv. 2200]")
+                                    end
+                                end
+                            else
+                                Obj["Next Sea"]:SetValue(false)
+                                Notify("Next Sea", "Now, u can go to Sea 2 in Teleport Tab", 5)
+                            end
+                    elseif ID == 2 then
+                        if lvl >= 4000 then
+                            
+                        end
                     end
-                end
-            elseif G["Unlock Sea 2"] and lvl >= 2250 and LP.PlayerStats.SecondSeaProgression.Value == "Yes" then
-                Obj["Unlock Sea 2"]:SetValue(false)
-                Notify("Unlock Sea 2", "Now, u can go to Sea 2 in Teleport Tab", 5)
-            else
-                local q, lv = unpack(QuestLv(lvl))
-                if (lvl >= lv) and ((LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible == false) or (LP.CurrentQuest.Value ~= q)) then
-                    GetQuest(q)
-                    task.wait(.1)
                 else
-                    Kill("Auto Level")
+                    local q, lv = unpack(QuestLv(lvl))
+                    if lvl >= lv and ((not LP.PlayerGui.MainGui.QuestFrame.QuestBoard.Visible) or LP.CurrentQuest.Value ~= q) then
+                        GetQuest(q)
+                        task.wait(.1)
+                    else
+                        Kill("Auto Level")
+                    end
                 end
             end
         end
@@ -1173,10 +1189,12 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-    while task.wait() do
-        if G["Auto Haki"] and LP.Character:FindFirstChild("Services") and LP.Character.Services:FindFirstChild("Haki") and LP.Character.Services.Haki.Value == 0 then
-            SendKey("T")
-            task.wait(5)
+    while task.wait(1) do
+        if G["Auto Haki"] and LP.PlayerStats.BusoShopValue.Value == "BusoHaki" and LP.Character:FindFirstChild("Services") and LP.Character.Services:FindFirstChild("Haki") and LP.Character.Services.Haki.Value == 0 then
+            game:GetService("ReplicatedStorage").Chest.Remotes.Events.Armament:FireServer()
+        end
+        if G["Auto Ken"] and LP.PlayerStats.KenShopValue.Value == "KenHaki" and LP.Character:FindFirstChild("Services") and LP.Character.Services:FindFirstChild("KenOpen") and not LP.Character.Services.KenOpen.Value and LP.Character.Services.KenHaki.Value > 0 then
+            SendKey("Y")
         end
     end
 end)
@@ -1195,25 +1213,18 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-    game:GetService("RunService").Stepped:Connect(function()
-        if G["Bring Mob"] and Magnet and LockPos and Mob and ParentMob then
-            BringMob()
-            game:GetService("RunService").Stepped:Wait()
-        end
-    end)
-end)
-task.spawn(function()
     while task.wait() do
         if Attack then
-            Hit()
+            Hit(AttackPos)
+            AttackPos = nil
             SendKey("Z")
             SendKey("X")
         end
     end
 end)
 task.spawn(function()
-    while task.wait() do
-        if G["Auto Level"] or G["Auto Daily Quest"] or G["Auto Material"] or G["Auto Accessory"] or G["Auto Sword"] or G["Unlock Sea 2"] or G["Unlock Sea 3"] or G["Auto Saber"] or G["Auto BM"] or G["Auto Muramasa"] or G["Auto Dragon"] or G["Auto GS"] or G["Auto Lord of Saber"] or G["Auto Ethereal"] or G["Auto Sea Event"] then
+    game:GetService("RunService").Stepped:Connect(function()
+        if DialogueEnabled or G["Auto Level"] or G["Auto Daily Quest"] or G["Auto Material"] or G["Auto Accessory"] or G["Auto Sword"] or G["Auto Saber"] or G["Auto BM"] or G["Auto Muramasa"] or G["Auto Dragon"] or G["Auto GS"] or G["Auto Lord of Saber"] or G["Auto Ethereal"] or G["Auto Sea Event"] then
             if LP.Character:FindFirstChild("Head") and not LP.Character.Head:FindFirstChild("tcode") then
                 local a = Instance.new("BodyVelocity", LP.Character.Head)
                 a.Name = "tcode"
@@ -1228,5 +1239,5 @@ task.spawn(function()
         elseif LP.Character:FindFirstChild("Head") and LP.Character.Head:FindFirstChild("tcode") then
             LP.Character.Head.tcode:Destroy()
         end
-    end
+    end)
 end)
